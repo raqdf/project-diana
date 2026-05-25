@@ -1,76 +1,9 @@
-// src/screens/HomeScreen.js
-import React, { useState, useRef } from 'react';
+// src/components/HomeComponents.js
+import React, { useRef } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native';
 
-// ⚠️ REEMPLAZA ESTO CON TU API KEY DE GOOGLE AI STUDIO
-const GEMINI_API_KEY = "AIzaSyCJvxGLByIYFGY_7q4L_xehM3vJyzo2m3w"; 
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
-export default function HomeScreen() {
-  const [mensajes, setMensajes] = useState([
-    { id: '1', texto: 'Hola, soy tu asistente de bienestar emocional. 🌿 ¿Cómo te sientes el día de hoy? Estoy aquí para escucharte sin juzgar.', emisor: 'bot' },
-  ]);
-  const [nuevoMensaje, setNuevoMensaje] = useState('');
-  const [cargando, setCargando] = useState(false); // Estado para mostrar que el bot está pensando
+export function ChatInterface({ mensajes, nuevoMensaje, setNuevoMensaje, cargando, enviarMensaje }) {
   const flatListRef = useRef();
-
-  const enviarMensaje = async () => {
-    if (!nuevoMensaje.trim() || cargando) return;
-
-    const textoUsuario = nuevoMensaje;
-    const mensajeUsuario = {
-      id: Date.now().toString(),
-      texto: textoUsuario,
-      emisor: 'usuario',
-    };
-
-    // 1. Mostrar el mensaje del usuario e iniciar animación de carga
-    setMensajes((prev) => [...prev, mensajeUsuario]);
-    setNuevoMensaje('');
-    setCargando(true);
-
-    try {
-      // 2. Llamada real a la API de Gemini mediante fetch nativo
-      const response = await fetch(GEMINI_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{
-              // Le damos instrucciones de rol (System Prompt) junto al mensaje del usuario
-              text: `Actúa como un psicólogo y asistente de bienestar emocional empático, reflexivo y profesional. Responde de forma breve y cercana al siguiente comentario del usuario sin usar markdown complejo: ${textoUsuario}`
-            }]
-          }]
-        })
-      });
-
-      const data = await response.json();
-      
-      // 3. Extraer el texto de la respuesta de Gemini
-      const respuestaTexto = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Lo siento, tuve un problema al procesar tu respuesta. ¿Me lo repites?';
-
-      const mensajeBot = {
-        id: (Date.now() + 1).toString(),
-        texto: respuestaTexto.trim(),
-        emisor: 'bot',
-      };
-
-      setMensajes((prev) => [...prev, mensajeBot]);
-
-    } catch (error) {
-      console.error("Error con Gemini:", error);
-      // Mensaje de error amigable en la interfaz
-      setMensajes((prev) => [...prev, {
-        id: (Date.now() + 1).toString(),
-        texto: 'Hubo un error de conexión. Por favor, verifica tu configuración o API Key.',
-        emisor: 'bot'
-      }]);
-    } finally {
-      setCargando(false); // Apagar indicador de carga
-    }
-  };
 
   const renderItem = ({ item }) => {
     const esBot = item.emisor === 'bot';
@@ -111,7 +44,7 @@ export default function HomeScreen() {
         onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
       />
 
-      {/* Indicador visual cuando Gemini está respondiendo */}
+      {/* Indicador de carga */}
       {cargando && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="small" color="#8b5cf6" />
@@ -128,7 +61,7 @@ export default function HomeScreen() {
           value={nuevoMensaje}
           onChangeText={setNuevoMensaje}
           multiline
-          editable={!cargando} // Deshabilitar entrada mientras carga
+          editable={!cargando}
         />
         <TouchableOpacity 
           style={[styles.sendButton, cargando && styles.sendButtonDisabled]} 

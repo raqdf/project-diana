@@ -39,3 +39,14 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders
+/ios
+/android
+
+# Ocultar la API Key de Gemini
+.env
