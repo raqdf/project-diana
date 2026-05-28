@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: alka-chat
+    runtime: node
+    buildCommand: npm run render-build
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: EXPO_PUBLIC_GEMINI_API_KEY
+        value: AIzaSyDAduRYDdoDg7XM1OMWrmQDN896GOqBPBY
+      - key: EXPO_PUBLIC_YOUTUBE_API_KEY
+        value: AIzaSyAc7GAJip2v0PgOtJPSNX4_pjpsoFmJdOk

@@ -20,10 +20,15 @@
     "react-native-webview": "13.16.1"
   },
   "scripts": {
-    "start": "expo start",
+    "start": "npx serve dist",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "build": "npx expo export --platform web",
+    "render-build": "npm install && npm run build"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "serve": "^14.2.6"
+  }
 }
