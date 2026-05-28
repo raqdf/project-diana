@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react';
 import * as Speech from 'expo-speech';
 
-// Tu clave de API provista
-const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY || "AIzaSyCyyvg4kVDkUDyx5NKLPO0bW5dChaSc4yQ"; 
+// Leemos la API Key únicamente desde las variables de entorno de Expo por seguridad.
+// ¡Nunca escribas tu clave real directamente aquí para que no se filtre en GitHub!
+const GEMINI_API_KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY; 
 
-// Corregimos la URL: Migramos del descontinuado gemini-1.5-flash al potente y activo gemini-2.5-flash
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 export const useChatLogic = () => {
@@ -14,7 +14,6 @@ export const useChatLogic = () => {
   const [nuevoMensaje, setNuevoMensaje] = useState('');
   const [cargando, setCargando] = useState(false);
   
-  // Historial de conversación para mantener contexto en el formato oficial de la API de Gemini
   const historialRef = useRef([
     { role: 'model', parts: [{ text: 'Hola, soy Diana, tu asistente de bienestar emocional. ¿Cómo te sientes el día de hoy? Estoy aquí para escucharte sin juzgar.' }] }
   ]);
@@ -33,9 +32,16 @@ export const useChatLogic = () => {
   };
 
   const enviarMensaje = async () => {
+    // Si la clave no está en el archivo .env, avisamos con un error claro
+    if (!GEMINI_API_KEY) {
+      const errorKey = 'Error: No se ha configurado la API Key de Gemini en tu archivo .env local.';
+      console.error(errorKey);
+      setMensajes((prev) => [...prev, { id: Date.now().toString(), texto: errorKey, emisor: 'bot' }]);
+      return;
+    }
+
     if (!nuevoMensaje.trim() || cargando) return;
 
-    // Detener cualquier audio en reproducción al enviar un nuevo mensaje
     try {
       Speech.stop();
     } catch (e) {}
@@ -51,7 +57,6 @@ export const useChatLogic = () => {
     setNuevoMensaje('');
     setCargando(true);
 
-    // Agregar mensaje del usuario al historial para contextualizar a la IA
     const nuevoHistorial = [
       ...historialRef.current,
       { role: 'user', parts: [{ text: textoUsuario }] }
@@ -87,7 +92,6 @@ export const useChatLogic = () => {
         emisor: 'bot',
       };
 
-      // Actualizar historial con la respuesta exitosa
       historialRef.current = [
         ...nuevoHistorial,
         { role: 'model', parts: [{ text: textoLimpio }] }
@@ -98,7 +102,7 @@ export const useChatLogic = () => {
 
     } catch (error) {
       console.error("Error detallado con Gemini:", error);
-      const mensajeError = 'Hubo un error de conexión con los servidores de bienestar. Por favor, verifica tu conexión a internet e inténtalo de nuevo.';
+      const mensajeError = 'Hubo un error de conexión con los servidores de bienestar. Por favor, verifica tu conexión a internet o tu API Key.';
       
       setMensajes((prev) => [...prev, {
         id: (Date.now() + 1).toString(),
